@@ -65,6 +65,17 @@ setup() {
   assert_output "https://github.com/user/repo/tree/mybranch"
 }
 
+@test "gh: tag" {
+  git remote set-url origin "git@github.com:user/repo.git"
+  git tag mytag
+  echo a > a
+  git add a
+  git commit -m a
+  git checkout mytag
+  run ../git-open
+  assert_output "https://github.com/user/repo/tree/mytag"
+}
+
 @test "gh: non-origin remote" {
   git remote set-url origin "git@github.com:user/repo.git"
   git remote add upstream "git@github.com:upstreamorg/repo.git"
@@ -292,6 +303,17 @@ setup() {
   assert_output --partial "https://bitbucket.org/paulirish/crbug-extension"
 }
 
+@test "bitbucket: tag" {
+  git remote set-url origin "git@bitbucket.org:paulirish/crbug-extension.git"
+  git tag mytag
+  echo a > a
+  git add a
+  git commit -m a
+  git checkout mytag
+  run ../git-open
+  assert_output "https://bitbucket.org/paulirish/crbug-extension/src?at=mytag"
+}
+
 @test "bitbucket: non-origin remote" {
   # https://github.com/paulirish/git-open/pull/4
   git remote add bbclone "git@bitbucket.org:rwhitbeck/git-open.git"
@@ -501,6 +523,39 @@ setup() {
   git checkout -B "bugfix-36"
   run ../git-open "--issue"
   assert_output "https://gitopen.visualstudio.com/Project/_workitems?id=36"
+}
+
+##
+## AWS Code Commit
+##
+
+@test "aws: https url" {
+  git remote set-url origin "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/repo"
+  git checkout -B "master"
+  run ../git-open
+  assert_output "https://us-east-1.console.aws.amazon.com/codecommit/home?region=us-east-1#/repository/repo/browse/"
+}
+
+@test "aws: ssh url" {
+  git remote set-url origin "ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/repo"
+  git checkout -B "master"
+  run ../git-open
+  assert_output "https://us-east-1.console.aws.amazon.com/codecommit/home?region=us-east-1#/repository/repo/browse/"
+}
+
+@test "aws: branch " {
+  git remote set-url origin "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/repo"
+  git checkout -B "mybranch"
+  run ../git-open
+  assert_output "https://us-east-1.console.aws.amazon.com/codecommit/home?region=us-east-1#/repository/repo/browse/mybranch/--/"
+}
+
+@test "aws: issue" {
+  git remote set-url origin "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/repo"
+  git checkout -B "issues/#12"
+  run ../git-open "--issue"
+  [ "$status" -eq 1 ]
+  assert_output "Issue feature does not supported on AWS Code Commit."
 }
 
 
